@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ${PG_SERVER_CONTAINER_NAME}
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydb
+    ports:
+      - "${PG_SERVER_HOST_PORT}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d
+    networks:
+      - pgnet
+
+  psql:
+    image: postgres:16
+    container_name: ${PG_CLIENT_CONTAINER_NAME}
+    depends_on:
+      - postgres
+    stdin_open: true
+    tty: true
+    entrypoint: ["sleep", "infinity"]
+    networks:
+      - pgnet
+
+
+networks:
+  pgnet:
+    name: ${PG_NETWORK_NAME}
+    driver: bridge
+
+volumes:
+  pg_data:
+    name: ${PG_VOLUME_NAME}
